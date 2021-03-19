@@ -1,0 +1,75 @@
+platform :ios, '11.0'
+use_frameworks!
+
+# workaround to avoid Xcode caching of Pods that requires
+# Product -> Clean Build Folder after new Cordova plugins installed
+# Requires CocoaPods 1.6 or newer
+install! 'cocoapods', :disable_input_output_paths => true
+
+def disable_bitcode_for_target(target)
+  target.build_configurations.each do |config|
+    config.build_settings['ENABLE_BITCODE'] = 'NO'
+
+    remove_cflags_matching(config.build_settings, ['-fembed-bitcode', '-fembed-bitcode-marker'])
+  end
+end
+
+def remove_cflags_matching(build_settings, cflags)
+  existing_cflags = build_settings['OTHER_CFLAGS']
+
+  removed_cflags = []
+  if !existing_cflags.nil?
+    cflags.each do |cflag|
+      existing_cflags.delete_if { |existing_cflag| existing_cflag == cflag && removed_cflags << cflag }
+    end
+  end
+
+  if removed_cflags.length > 0
+    build_settings['OTHER_CFLAGS'] = existing_cflags
+  end
+end
+
+
+def capacitor_pods
+  # Automatic Capacitor Pod dependencies, do not delete
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'RdlaboCapacitorFacebookLogin', :path => '../../node_modules/@rdlabo/capacitor-facebook-login'
+  pod 'CapacitorAppleLogin', :path => '../../node_modules/capacitor-apple-login'
+  pod 'CordovaPlugins', :path => '../capacitor-cordova-ios-plugins'
+  # Do not delete
+end
+
+target 'App' do
+  capacitor_pods
+  # Add your Pods here
+  pod 'FirebaseCore' # Add this line
+  pod 'Firebase/Messaging' # Add this line
+end
+
+
+#post_install do |installer|
+#  installer.pods_project.targets.each do |target|
+#    target.build_configurations.each do |config|
+      # Disable bitcode in order to support cordova-plugin-iosrtc
+#      config.build_settings['ENABLE_BITCODE'] = 'NO'
+#    end
+#  end
+#end
+
+
+post_install do |installer|
+  project_name = Dir.glob("*.xcodeproj").first
+  project = Xcodeproj::Project.open(project_name)
+  project.targets.each do |target|
+    disable_bitcode_for_target(target)
+  end
+  project.save
+
+  installer.pods_project.targets.each do |target|
+    disable_bitcode_for_target(target)
+  end
+
+  installer.pods_project.save
+end
+

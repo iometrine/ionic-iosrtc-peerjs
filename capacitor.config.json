@@ -1,0 +1,14 @@
+{
+  "appId": "io.ionic.starter",
+  "appName": "ionic-iosrtc-peer",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "cordova": {},
+  "linuxAndroidStudioPath": "/home/devlii/Android/android-studio/bin/studio.sh"
+}

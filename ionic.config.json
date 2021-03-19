@@ -1,0 +1,7 @@
+{
+  "name": "ionic-iosrtc-peer",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
